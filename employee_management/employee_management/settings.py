@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-r10+k&^1r8@npf%bwh&p$u$uo_v6rvexsnxk+0pd!(!#w_k@bn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -80,21 +80,36 @@ WSGI_APPLICATION = 'employee_management.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 import os
+from urllib.parse import urlparse
 # pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASS'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+db_url = os.getenv('DB_URL')
+if db_url:
+    parsed_url = urlparse(db_url)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': parsed_url.path.lstrip('/'),
+            'USER': parsed_url.username,
+            'PASSWORD': parsed_url.password,
+            'HOST': parsed_url.hostname,
+            'PORT': parsed_url.port or 5432,
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASS'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT'),
+        }
+    }
 
 
 # Password validation
@@ -138,6 +153,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:4000",
     "http://127.0.0.1:4000",
 ]
+
 
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
 
