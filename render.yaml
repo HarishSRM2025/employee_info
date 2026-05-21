@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: employee-management
+    runtime: python
+    buildCommand: pip install -r requirements.txt && cd employee_management && python manage.py collectstatic --noinput
+    startCommand: cd employee_management && gunicorn employee_management.wsgi:application --config gunicorn.conf.py
